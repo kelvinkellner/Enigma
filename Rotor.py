@@ -22,19 +22,23 @@ class Rotor():
         
         self._change_rotor(rotor)
         
-    def encrypt(self, letter, first):
+    def encrypt(self, letter, first=True):
         if first:
             self._turn()
             first = False
-        new_letter = self.wiring[(ALPHA.index(letter)+ALPHA.index(self.position))%len(ALPHA)]
+        #print("{:3s} - {}".format(self.rotor, self.position))
+        new_letter = self.wiring[(ALPHA.index(letter)+ALPHA.index(self.position)+ALPHA.index(self.ring_setting))%len(ALPHA)]
         encrypted = new_letter
+        print(self.rotor, encrypted)
         if self.next_rotor is not None:
+            encrypted = ALPHA[(26+ALPHA.index(encrypted)-ALPHA.index(self.position)-ALPHA.index(self.ring_setting))%26]
             encrypted = self.next_rotor.encrypt(encrypted, first)
-        return encrypted
+        return encrypted    
     
     def back(self, letter):
         new_letter = ALPHA[self.wiring.index(letter)]
         encrypted = new_letter
+        print(self.rotor, encrypted)
         if self.prev_rotor is not None:
             encrypted = self.prev_rotor.back(encrypted)
         return encrypted
@@ -48,4 +52,4 @@ class Rotor():
         if self.next_rotor is not None and self.position in self.turnovers:
             self.next_rotor._turn()
             print("TURNING NEXT ROTOR")
-        self.position = ALPHA[(ALPHA.index(self.position)+1)%len(ALPHA)]
+        self.position = ALPHA[((ALPHA.index(self.position)+1)%len(ALPHA))%26]

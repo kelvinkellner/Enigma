@@ -15,10 +15,10 @@ from Reflector import Reflector
 # USER VARIABLES
 
 # Init switchboard
-switchboard = "" # enter swaps in format 'AB,CD,EF..." (the real machine performed 10 swaps)
+switchboard = "" # enter swaps in format 'AB CD EF..." (the real machine performed 10 swaps)
 
 # Init Rotors
-rotors = (Rotor(rotor="I"), Rotor(rotor="II"), Rotor(rotor="III", initial_position="Z"))
+rotor_settings = (("I","A","A"),("II","A","A"),("III","Z","A"))
 reflector = Reflector("B")
 
 """
@@ -26,6 +26,7 @@ reflector = Reflector("B")
 Inner workings below...
 --------------------------------------------------
 """
+ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # Receive input message
 message = input("Message: ")
@@ -33,7 +34,7 @@ encrypted = message.upper()
 
 
 # Create list of individual switchboard swaps
-sb = switchboard.split(",")
+sb = switchboard.split(" ")
 
 # Create tuples for each character swap
 switches = []
@@ -50,8 +51,12 @@ for swap in switches:
         elif encrypted[i] == swap[1]:
             encrypted = encrypted[:i] + swap[0] + encrypted[i+1:]
 
+# Setup rotors
+rotors = []
+for r in rotor_settings:
+    rotors.append(Rotor(rotor=r[0], initial_position=r[1], ring_setting=r[2]))
 
-# Set up rotor chain
+# Chain connect rotors
 for i in range(len(rotors)-1, 0, -1):
     rotors[i].next_rotor = rotors[i-1]
 for i in range(len(rotors)-1):
@@ -62,8 +67,19 @@ reflector.next_rotor = rotors[0]
 reflector.prev_rotor = rotors[0]
 rotors[0].next_rotor = reflector
 
+# Encrypt each letter
 for i in range(len(encrypted)):
-    encrypted = encrypted[:i] + rotors[-1].encrypt(encrypted[i], True) + encrypted[i+1:]
+    if encrypted[i] in ALPHA:
+        encrypted = encrypted[:i] + rotors[-1].encrypt(encrypted[i]) + encrypted[i+1:]
+    
+# Run through second pass on switchboard
+for swap in switches:
+    for i in range(len(encrypted)):
+        if encrypted[i] == swap[0]:
+            encrypted = encrypted[:i] + swap[1] + encrypted[i+1:]
+        elif encrypted[i] == swap[1]:
+            encrypted = encrypted[:i] + swap[0] + encrypted[i+1:]
+
 
 # Output final encrypted message
 print(message.upper(), " -> ", encrypted)

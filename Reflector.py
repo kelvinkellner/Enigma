@@ -10,12 +10,15 @@ class Reflector():
         
         self.reflector = reflector
         self.next_rotor = next_rotor
+        self.position = "A"
+        self.ring_setting = "A"
         
         self.wiring = REFLECTOR_NUMS[self.reflector]
         
     def encrypt(self, letter, _):
         new_letter = self.wiring[ALPHA.index(letter)]
         encrypted = new_letter
+        print("REFLECTOR", encrypted)
         if self.next_rotor is not None:
             encrypted = self.next_rotor.back(encrypted)
         return encrypted
